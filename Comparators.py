@@ -3,43 +3,43 @@ from functools import total_ordering
 
 @total_ordering
 class MinHeap_overlap:
-    def __init__(self, node, entry, isgroup=False):
-        self.node = node
+    def __init__(self, entry, rectangle, isgroup=False):
         self.entry = entry
+        self.rectangle = rectangle
         self.distribution = None
 
         if isgroup:
-            self.distribution = node
-            self.node = node[0]
-            self.entry = node[1]
+            self.distribution = entry
+            self.entry = entry[0]
+            self.rectangle = entry[1]
 
     def __lt__(self, other):
 
-        if self.node.MBR.calculate_overlap(self.entry) > other.node.MBR.calculate_overlap(self.entry):
+        if self.entry.MBR.calculate_overlap(self.rectangle) > other.rectangle.MBR.calculate_overlap(self.rectangle):
             return True
 
-        elif self.node.MBR.calculate_overlap(self.entry) == other.node.MBR.calculate_overlap(self.entry):
-            if self.node.MBR.calculate_area_expansion(self.entry) >  other.node.MBR.calculate_area_expansion(self.entry):
+        elif self.entry.MBR.calculate_overlap(self.rectangle) == other.rectangle.MBR.calculate_overlap(self.rectangle):
+            if self.entry.MBR.calculate_area_expansion(self.rectangle) >  other.rectangle.MBR.calculate_area_expansion(self.rectangle):
                 return True
 
-            elif self.node.MBR.calculate_area_expansion(self.entry) == other.node.MBR.calculate_area_expansion(self.entry):
-                if self.node.MBR.get_area() > other.node.MBR.get_area():
+            elif self.entry.MBR.calculate_area_expansion(self.rectangle) == other.rectangle.MBR.calculate_area_expansion(self.rectangle):
+                if self.entry.MBR.get_area() > other.rectangle.MBR.get_area():
                     return True
         return False
 
 
 @total_ordering
 class MinHeap_areaExpansion:
-    def __init__(self, node, entry):
-        self.node = node
+    def __init__(self, entry, rectangle):
         self.entry = entry
+        self.rectangle = rectangle
 
     def __lt__(self, other):
-        if self.node.MBR.calculate_area_expansion(self.entry) > other.node.MBR.calculate_area_expansion(self.entry):
+        if self.entry.MBR.calculate_area_expansion(self.rectangle) > other.rectangle.MBR.calculate_area_expansion(self.rectangle):
             return True
 
-        elif self.node.MBR.calculate_area_expansion(self.entry) == other.node.MBR.calculate_area_expansion(self.entry):
-            if self.node.MBR.get_area() > other.node.MBR.get_area():
+        elif self.entry.MBR.calculate_area_expansion(self.rectangle) == other.rectangle.MBR.calculate_area_expansion(self.rectangle):
+            if self.entry.MBR.get_area() > other.rectangle.MBR.get_area():
                 return True
             
         return False

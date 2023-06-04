@@ -8,21 +8,25 @@ import heapq
 
 
 class Node:
-    def __init__(self, level, entries=[]):
+    def __init__(self, level, entries=[], parent_entry=None):
         self.MAX_DEGREE = 3
         self.MIN_FILL_FACTOR = int(.40 * self.MAX_DEGREE)
 
         self.level = level
         self.entries = entries
+        self.parent_entry = parent_entry
 
-    def add_entry(self, entry, parent_entry, overflow_dict):
+    def add_entry(self, entry, overflow_dict):
 
         if isinstance(entry, Record) and self.level == overflow_dict[-1]:
+            entry.set_belonging_node(self)
             self.entries.append(entry)
-            if parent_entry is not None:
-                parent_entry.MBR = parent_entry.set_MBR()
         elif isinstance(entry, Middle_entry) and self.level != overflow_dict[-1]:
+            entry.set_belonging_node(self)
             self.entries.append(entry)
+
+        if self.parent_entry is not None:
+            self.parent_entry.MBR = self.parent_entry.set_MBR()
 
 
 
