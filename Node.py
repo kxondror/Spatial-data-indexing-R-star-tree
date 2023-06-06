@@ -9,15 +9,20 @@ import heapq
 
 class Node:
     def __init__(self, level, entries=None, parent_entry=None):
+        self.entries = None
         if entries is None:
             entries = []
 
-        self.MAX_DEGREE = 3
-        self.MIN_FILL_FACTOR = int(.40 * self.MAX_DEGREE)
-
-        self.entries = entries
+        self.MAX_DEGREE = 2 # change after tests
+        self.MIN_FILL_FACTOR = int(.50 * self.MAX_DEGREE) # change after tests
+        self.entries = self.update_belonging_node(entries)
         self.level = level
         self.parent_entry = parent_entry
+
+    def update_belonging_node(self, entries):
+        for entry in entries:
+            entry.set_belonging_node(self)
+        return entries
 
     def add_entry(self, entry, leaf_level):
 
@@ -35,7 +40,6 @@ class Node:
 
     @staticmethod
     def update_levels_topdown(node, leaf_level):
-        print("node level:", node.level)
         for entry in node.entries:
 
             if isinstance(entry, Middle_entry):

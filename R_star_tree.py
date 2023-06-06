@@ -64,6 +64,7 @@ class RTree:
         else:
             self.split(node, new_entry)
 
+
     def ReInsert(self, node, new_entry):
 
         distances = defaultdict(float)
@@ -78,17 +79,16 @@ class RTree:
 
         # RI3 Remove the first p entries from N and adjust the bounding rectangle of N
         node.entries.clear()
-        for wrapper in distances[int(node.MAX_DEGREE * 0.4):]:
+        for wrapper in distances[int(node.MAX_DEGREE * 0.5):]:# change after tests
             if not node.is_full():
                 node.add_entry(wrapper[0], self.total_levels)
             else:
                 raise "no entries should be left behind"
-
         node.parent_entry.MBR = node.parent_entry.set_MBR()
 
         # RI4 In the sort, defined in RI2, starting with the maximum distance (= far reinsert) invoke Insert to
         # reinsert the entries
-        for reinsert_entries in reversed(distances[:int(node.MAX_DEGREE * 0.4)]):
+        for reinsert_entries in reversed(distances[:int(node.MAX_DEGREE * 0.5)]):
             self.Insert(reinsert_entries[0])
 
     def split(self, node, new_entry):
@@ -96,7 +96,7 @@ class RTree:
         slit_axis = node.ChooseSpiltAxis(new_entry)
         distribution1, distribution2 = node.ChooseSpiltIndex(slit_axis)
 
-        if node.level != 1: #not the root
+        if node.parent_entry is not None:
             parent_node = node.parent_entry.belonging_node
 
             for entry in parent_node.entries:
@@ -114,7 +114,7 @@ class RTree:
                 else:
                     self.OverflowTreatment(parent_node, m)
 
-        else:# split happens on the root
+        if node.level == 1:
             self.total_levels += 1
             self.overflow_flags[self.total_levels] = True
 
@@ -122,14 +122,14 @@ class RTree:
 
             m1 = Middle_entry(belonging_node=self.root)
             new_node1 = Node(level=(self.root.level + 1), entries=distribution1, parent_entry=m1)
-
-            Node.update_levels_topdown(new_node1, self.total_levels)
             m1.set_pointer(new_node1)
+            Node.update_levels_topdown(new_node1, self.total_levels)
 
             m2 = Middle_entry(belonging_node=self.root)
             new_node2 = Node(level=(self.root.level + 1), entries=distribution2, parent_entry=m2)
-            Node.update_levels_topdown(new_node2, self.total_levels)
             m2.set_pointer(new_node2)
+            Node.update_levels_topdown(new_node2, self.total_levels)
+
 
             self.root.add_entry(m1, self.total_levels)
             self.root.add_entry(m2, self.total_levels)
