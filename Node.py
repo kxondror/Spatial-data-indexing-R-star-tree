@@ -8,46 +8,71 @@ import heapq
 
 
 class Node:
-    def __init__(self, level, entries=[], parent_entry=None):
+    def __init__(self, level, entries=None, parent_entry=None):
+        if entries is None:
+            entries = []
+
         self.MAX_DEGREE = 3
         self.MIN_FILL_FACTOR = int(.40 * self.MAX_DEGREE)
 
-        self.level = level
         self.entries = entries
+        self.level = level
         self.parent_entry = parent_entry
 
-    def add_entry(self, entry, overflow_dict):
+    def add_entry(self, entry, leaf_level):
 
-        if isinstance(entry, Record) and self.level == overflow_dict[-1]:
+        if isinstance(entry, Record) and self.level == leaf_level:
             entry.set_belonging_node(self)
             self.entries.append(entry)
-        elif isinstance(entry, Middle_entry) and self.level != overflow_dict[-1]:
+        elif isinstance(entry, Middle_entry) and self.level != leaf_level:
             entry.set_belonging_node(self)
             self.entries.append(entry)
+        else:
+            raise "Illegal Insertion!"
 
         if self.parent_entry is not None:
             self.parent_entry.MBR = self.parent_entry.set_MBR()
 
+    @staticmethod
+    def update_levels_topdown(node, leaf_level):
+        print("node level:", node.level)
+        for entry in node.entries:
 
+            if isinstance(entry, Middle_entry):
+                child_node = entry.child_pointer
+                child_node.level = (node.level + 1)
+                Node.update_levels_topdown(child_node, leaf_level)
+
+            else:
+                if node.level != leaf_level:
+                    print("wrong")
 
     def is_full(self):
-        return True if len(self.entries) >= self.MAX_DEGREE else False
+        total_entries = len(self.entries)
+        if total_entries < self.MAX_DEGREE:
+            return False
+        elif total_entries == self.MAX_DEGREE:
+            return True
+        else:
+            raise "A Node cant have more than :3 entries!"
 
     def ChooseSpiltAxis(self, entry):
-        M = self.entries
+        M = self.entries.copy()
         M.append(entry)
         MAX_MARGIN = sys.maxsize
         splitAxisDistribution = None
 
         for dimension in range(2):
 
-            entriesSortedByLower = sorted([entry for entry in M], key=lambda x: (x.MBR.get_points()[0][dimension], x.MBR.get_points()[0][dimension]))
-            entriesSortedByHigher = sorted([entry for entry in M], key=lambda x: (x.MBR.get_points()[1][dimension], x.MBR.get_points()[1][dimension]))
+            entriesSortedByLower = sorted([entry for entry in M], key=lambda x: (
+                x.MBR.get_points()[0][dimension], x.MBR.get_points()[0][dimension]))
+            entriesSortedByHigher = sorted([entry for entry in M], key=lambda x: (
+                x.MBR.get_points()[1][dimension], x.MBR.get_points()[1][dimension]))
 
             margin_sum = 0
             distributions = []
             for Lists in [entriesSortedByLower + entriesSortedByHigher]:
-                for k in range(1, self.MAX_DEGREE - 2 * self.MIN_FILL_FACTOR + 3): #check paper 5.1 for the + 3
+                for k in range(1, self.MAX_DEGREE - 2 * self.MIN_FILL_FACTOR + 3):  # check paper 5.1 for the + 3
                     first_group = []
                     second_group = []
 
@@ -78,4 +103,3 @@ class Node:
 
         split_index = min_heap[0]
         return split_index.distribution[0].entries, split_index.distribution[1].entries
-

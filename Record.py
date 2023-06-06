@@ -11,6 +11,5 @@ class Record:
     def set_belonging_node(self, node):
         self.belonging_node = node
 
-
     def get_record_mbr(self):
         return tuple([cord for cord in self.cordinates]), tuple([cord for cord in self.cordinates])
