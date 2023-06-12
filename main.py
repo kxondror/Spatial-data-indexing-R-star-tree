@@ -27,7 +27,6 @@ if __name__ == '__main__':
     print(entry.child_pointer.entries[0].cordinates)
     input()"""
 
-
     Tree.Insert_data(Record(1, 1, (1, 1)))
     print("-----------")
     Tree.print_tree(Tree.root)
@@ -62,7 +61,6 @@ if __name__ == '__main__':
     input()
     Tree.Insert_data(Record(4, 2, (1, 8)))
     print("-----------")
-    print(Tree.total_levels)
     Tree.print_tree(Tree.root)
     input()
     Tree.Insert_data(Record(4, 2, (2, 2)))

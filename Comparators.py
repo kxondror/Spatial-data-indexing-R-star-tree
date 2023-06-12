@@ -3,7 +3,7 @@ from functools import total_ordering
 
 @total_ordering
 class MinHeap_overlap:
-    def __init__(self, entry, rectangle, isgroup=False):
+    def __init__(self, entry, rectangle, isgroup=False) -> None:
         self.entry = entry
         self.rectangle = rectangle
         self.distribution = None
@@ -13,7 +13,7 @@ class MinHeap_overlap:
             self.entry = entry[0]
             self.rectangle = entry[1]
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
 
         if self.entry.MBR.calculate_overlap(self.rectangle) > other.rectangle.MBR.calculate_overlap(self.rectangle):
             return True
@@ -30,11 +30,11 @@ class MinHeap_overlap:
 
 @total_ordering
 class MinHeap_areaExpansion:
-    def __init__(self, entry, rectangle):
+    def __init__(self, entry, rectangle) -> None:
         self.entry = entry
         self.rectangle = rectangle
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> float:
         if self.entry.MBR.calculate_area_expansion(self.rectangle) > other.rectangle.MBR.calculate_area_expansion(self.rectangle):
             return True
 

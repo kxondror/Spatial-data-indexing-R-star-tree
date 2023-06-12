@@ -1,71 +1,70 @@
 from Node import Node
 from Middle_entry import Middle_entry
+from Record import Record
 from Comparators import MinHeap_overlap, MinHeap_areaExpansion
 from collections import defaultdict
+
 import math
 import heapq
 
 
 class RTree:
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = None
         self.overflow_flags = {}
         self.total_levels = 1
 
-    def Insert_data(self, rectangle):
+    def Insert_data(self, rectangle) -> None:
         if self.root is None:
-            self.root = Node(level=1)
-            self.overflow_flags[self.root.level] = True
+            self.root = Node()
+            self.overflow_flags[1] = False
 
         # ID1 Invoke Insert starting with the leaf level as a parameter, to Insert a new data rectangle
-        self.Insert(rectangle)
+        self.Insert(rectangle=rectangle, level=1)
 
-    def Insert(self, rectangle):
+    def Insert(self, rectangle, level) -> None:
 
-        # I1 Invoke ChooseSubtree. with the level as a parameter,to find an appropriate node N in which to place the
-        # new entry E
-
-        N = self.choose_subtree(self.root, rectangle)
+        # I1 Invoke ChooseSubtree, with the level as parameter to find an appropriate node N in which to place the new
+        # entry E
+        N = self.choose_subtree(node=self.root, rectangle=rectangle, level=level)
 
         # I2 If N has less than M entries, accommodate rectangle in N
         if not N.is_full():
-            N.add_entry(rectangle, self.total_levels)
+            N.add_entry(entry=rectangle)
         else:
-            self.OverflowTreatment(node=N, new_entry=rectangle)
+            self.OverflowTreatment(node=N, new_entry=rectangle, level=level)
             # If N has M entries. invoke OverflowTreatment with the level of N
             # as a parameter [for reinsertion or split]
 
-    def choose_subtree(self, node, rectangle):
+    def choose_subtree(self, node, rectangle, level) -> Node:
 
-        if node.level == self.total_levels:
+        if level == list(self.overflow_flags)[-1]:
             return node
 
+        min_heap = []
+        heapq.heapify(min_heap)
+        # CS2 If the child-pointers in N point to leaves
+        if node.points_to_leaf():
+            for middle_entry in node.entries:
+                wrapper = MinHeap_overlap(middle_entry, rectangle)
+                heapq.heappush(min_heap, wrapper)
+        else:  # CS2 If the child-pointers in N do not point to leaves
+            for middle_entry in node.entries:
+                wrapper = MinHeap_areaExpansion(middle_entry, rectangle)
+                heapq.heappush(min_heap, wrapper)
+
+        best_entry = min_heap[0].entry
+        return self.choose_subtree(node=best_entry.child_pointer, rectangle=rectangle, level=level + 1)
+
+    def OverflowTreatment(self, node, new_entry, level) -> None:
+
+        if node is not self.root and self.overflow_flags[level]:
+            self.overflow_flags[level] = False
+            self.ReInsert(node=node, new_entry=new_entry, level=level)
         else:
-            min_heap = []
-            heapq.heapify(min_heap)
-            # CS2 If the child-pointers in N point to leaves
-            if node.level == (self.total_levels - 1):
-                for middle_entry in node.entries:
-                    wrapper = MinHeap_overlap(middle_entry, rectangle)
-                    heapq.heappush(min_heap, wrapper)
-            else:  # CS2 If the child-pointers in N do not point to leaves
-                for middle_entry in node.entries:
-                    wrapper = MinHeap_areaExpansion(middle_entry, rectangle)
-                    heapq.heappush(min_heap, wrapper)
+            self.split(node=node, new_entry=new_entry, level=level)
 
-            best_entry = min_heap[0].entry
-            return self.choose_subtree(best_entry.child_pointer, rectangle)
-
-    def OverflowTreatment(self, node, new_entry):
-
-        if node.level != 1 and self.overflow_flags[node.level]:
-            self.overflow_flags[node.level] = False
-            self.ReInsert(node, new_entry)
-        else:
-            self.split(node, new_entry)
-
-
-    def ReInsert(self, node, new_entry):
+    def ReInsert(self, node, new_entry, level) -> None:
 
         distances = defaultdict(float)
         # RI1 For all M+l entries of a node N, compute the distance between the centers of their rectangles and the
@@ -79,9 +78,9 @@ class RTree:
 
         # RI3 Remove the first p entries from N and adjust the bounding rectangle of N
         node.entries.clear()
-        for wrapper in distances[int(node.MAX_DEGREE * 0.5):]:# change after tests
+        for wrapper in distances[int(node.MAX_DEGREE * 0.5):]:  # change after tests
             if not node.is_full():
-                node.add_entry(wrapper[0], self.total_levels)
+                node.add_entry(wrapper[0])
             else:
                 raise "no entries should be left behind"
         node.parent_entry.MBR = node.parent_entry.set_MBR()
@@ -89,12 +88,12 @@ class RTree:
         # RI4 In the sort, defined in RI2, starting with the maximum distance (= far reinsert) invoke Insert to
         # reinsert the entries
         for reinsert_entries in reversed(distances[:int(node.MAX_DEGREE * 0.5)]):
-            self.Insert(reinsert_entries[0])
+            self.Insert(rectangle=reinsert_entries[0], level=level)
 
-    def split(self, node, new_entry):
+    def split(self, node, new_entry, level) -> None:
 
-        slit_axis = node.ChooseSpiltAxis(new_entry)
-        distribution1, distribution2 = node.ChooseSpiltIndex(slit_axis)
+        slit_axis = node.ChooseSpiltAxis(entry=new_entry)
+        distribution1, distribution2 = Node.ChooseSpiltIndex(axis=slit_axis)
 
         if node.parent_entry is not None:
             parent_node = node.parent_entry.belonging_node
@@ -106,50 +105,36 @@ class RTree:
 
             for dist in [distribution1, distribution2]:
                 m = Middle_entry(belonging_node=parent_node)
-                new_node = Node(level=node.level, entries=dist, parent_entry=m)
-                m.set_pointer(new_node)
+                new_node = Node(entries=dist, parent_entry=m)
+                m.set_pointer(child=new_node)
 
                 if not parent_node.is_full():
-                    parent_node.add_entry(m, self.total_levels)
+                    parent_node.add_entry(entry=m)
                 else:
-                    self.OverflowTreatment(parent_node, m)
+                    self.OverflowTreatment(node=parent_node, new_entry=m, level=level)
 
-        if node.level == 1:
+        if node is self.root:
             self.total_levels += 1
             self.overflow_flags[self.total_levels] = True
 
-            self.root = Node(level=1)
+            self.root = Node()
 
             m1 = Middle_entry(belonging_node=self.root)
-            new_node1 = Node(level=(self.root.level + 1), entries=distribution1, parent_entry=m1)
-            m1.set_pointer(new_node1)
-            Node.update_levels_topdown(new_node1, self.total_levels)
+            new_node1 = Node(entries=distribution1, parent_entry=m1)
+            m1.set_pointer(child=new_node1)
 
             m2 = Middle_entry(belonging_node=self.root)
-            new_node2 = Node(level=(self.root.level + 1), entries=distribution2, parent_entry=m2)
-            m2.set_pointer(new_node2)
-            Node.update_levels_topdown(new_node2, self.total_levels)
+            new_node2 = Node(entries=distribution2, parent_entry=m2)
+            m2.set_pointer(child=new_node2)
 
+            self.root.add_entry(entry=m1)
+            self.root.add_entry(entry=m2)
 
-            self.root.add_entry(m1, self.total_levels)
-            self.root.add_entry(m2, self.total_levels)
-
-
-    def print_tree(self, node):
-        if node.level == self.total_levels:
+    def print_tree(self, node) -> None:
+        if isinstance(node.entries[0], Record):
             for entry in node.entries:
-                print(entry.cordinates, "level:", node.level)
+                print(entry.cordinates)
         else:
             for entry in node.entries:
-                print(f"Middle entry: {entry.MBR.get_points()} ,level :{node.level}")
-                self.print_tree(entry.child_pointer)
-    """
-
-    def print_tree(self, node):
-        for entry in node.entries:
-            if isinstance(entry, Middle_entry):
-                print(f"Middle entry: {entry.MBR.get_points()} ,level :{node.level}")
-                self.print_tree(entry.child_pointer)
-            else:
-                print(entry.cordinates, "level:", node.level)
-    """
+                print(f"Middle entry: {entry.MBR.get_points()}")
+                self.print_tree(node=entry.child_pointer)

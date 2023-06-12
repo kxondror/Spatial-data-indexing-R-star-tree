@@ -8,50 +8,34 @@ import heapq
 
 
 class Node:
-    def __init__(self, level, entries=None, parent_entry=None):
-        self.entries = None
+    def __init__(self, entries=None, parent_entry=None) -> None:
         if entries is None:
             entries = []
 
-        self.MAX_DEGREE = 2 # change after tests
-        self.MIN_FILL_FACTOR = int(.50 * self.MAX_DEGREE) # change after tests
+        self.MAX_DEGREE = 2  # change after tests
+        self.MIN_FILL_FACTOR = int(.50 * self.MAX_DEGREE)  # change after tests
         self.entries = self.update_belonging_node(entries)
-        self.level = level
         self.parent_entry = parent_entry
 
-    def update_belonging_node(self, entries):
+    def update_belonging_node(self, entries) -> list:
         for entry in entries:
             entry.set_belonging_node(self)
         return entries
 
-    def add_entry(self, entry, leaf_level):
-
-        if isinstance(entry, Record) and self.level == leaf_level:
-            entry.set_belonging_node(self)
-            self.entries.append(entry)
-        elif isinstance(entry, Middle_entry) and self.level != leaf_level:
-            entry.set_belonging_node(self)
-            self.entries.append(entry)
-        else:
-            raise "Illegal Insertion!"
+    def add_entry(self, entry) -> None:
+        entry.set_belonging_node(self)
+        self.entries.append(entry)
 
         if self.parent_entry is not None:
             self.parent_entry.MBR = self.parent_entry.set_MBR()
 
-    @staticmethod
-    def update_levels_topdown(node, leaf_level):
-        for entry in node.entries:
+    def points_to_leaf(self) -> bool:
+        if isinstance(self.entries[0], Middle_entry):
+            pointer = self.entries[0].child_pointer
+            return True if isinstance(pointer.entries[0], Record) else False
+        return False
 
-            if isinstance(entry, Middle_entry):
-                child_node = entry.child_pointer
-                child_node.level = (node.level + 1)
-                Node.update_levels_topdown(child_node, leaf_level)
-
-            else:
-                if node.level != leaf_level:
-                    print("wrong")
-
-    def is_full(self):
+    def is_full(self) -> bool:
         total_entries = len(self.entries)
         if total_entries < self.MAX_DEGREE:
             return False
@@ -60,7 +44,7 @@ class Node:
         else:
             raise "A Node cant have more than :3 entries!"
 
-    def ChooseSpiltAxis(self, entry):
+    def ChooseSpiltAxis(self, entry) -> list:
         M = self.entries.copy()
         M.append(entry)
         MAX_MARGIN = sys.maxsize
@@ -97,7 +81,8 @@ class Node:
 
         return splitAxisDistribution
 
-    def ChooseSpiltIndex(self, axis):
+    @staticmethod
+    def ChooseSpiltIndex(axis) -> tuple:
         min_heap = []
         heapq.heapify(min_heap)
 

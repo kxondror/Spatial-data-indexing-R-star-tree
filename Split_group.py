@@ -6,7 +6,7 @@ class Split_group:
         self.entries = group
         self.MBR = self.set_MBR()
 
-    def set_MBR(self):
+    def set_MBR(self) -> MBR:
         total_points = []
         for point in self.entries:
             point1, point2 = point.MBR.get_points()
