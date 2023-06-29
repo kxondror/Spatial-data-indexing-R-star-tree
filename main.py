@@ -5,6 +5,7 @@ from Node import Node
 from Record import Record
 from MBR import MBR
 from Middle_entry import Middle_entry
+from skyline import skyline
 
 
 if __name__ == '__main__':
@@ -16,55 +17,17 @@ if __name__ == '__main__':
     handler.df_to_bin(df)
     file_handler.file_read("datafile.bin")"""
 
-    """node2 = Node(leaf=True)
-    node2.add_entry(Record(2, 1, [1, 2]))
+    # Example with step-by-step tree insertions and a subsequent deletion.
+    data = [(1, 1), (2, 1), (3, 4), (4, 3), (1, 2), (10, 5), (1, 5), (1, 6), (1, 7), (1, 8), (2, 2)]
+    for record in data:
+        Tree.Insert_data(Record(1, 1, (record[0], record[1])))
+        Tree.print_tree(Tree.root)
+        input("\n<Press Enter>\n")
+    Tree.print_tree(Tree.root)
 
-    entry = Middle_entry(node2, MBR([[1, 1], [1, 2], [2, 2], [2, 1]]))
+    print("\n------Deletion------\n")
+    Tree.delete_record(Record(1, 1, (1, 5)))
+    Tree.print_tree(Tree.root)
 
-    Tree.root = Node()
-    Tree.root.add_entry(entry)
-
-    print(entry.child_pointer.entries[0].cordinates)
-    input()"""
-
-    Tree.Insert_data(Record(1, 1, (1, 1)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(2, 1, (2, 1)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(3, 1, (3, 4)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(4, 2, (1, 2)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(4, 2, (10, 5)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(4, 2, (1, 5)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(4, 2, (1, 6)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(4, 2, (1, 7)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(4, 2, (1, 8)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
-    input()
-    Tree.Insert_data(Record(4, 2, (2, 2)))
-    print("-----------")
-    Tree.print_tree(Tree.root)
 
 

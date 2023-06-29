@@ -4,7 +4,7 @@ import re
 import pandas as pd
 
 
-def file_read(filename):
+def read_file(filename):
     with open(filename, "r") as file:
 
         next(file)
@@ -13,12 +13,11 @@ def file_read(filename):
             for word in line.split():
 
                 if re.search('^Block+', word):
-                    print(f'{word}: ')
+                    yield word
                     continue
 
                 word = float(word)
-                print(word)
-                input()
+                yield word
 
 
 def file_write(element):
