@@ -17,8 +17,9 @@ class Node:
         if entries is None:
             entries = []
 
-        self.MAX_DEGREE = 2  # change after tests
-        self.MIN_FILL_FACTOR = int(.50 * self.MAX_DEGREE)  # change after tests
+
+        self.MAX_DEGREE = 1000#2  # for tests
+        self.MIN_FILL_FACTOR = int(.40 * self.MAX_DEGREE)
         self.entries = self.update_belonging_node(entries)
         self.parent_entry = parent_entry
 
@@ -54,7 +55,6 @@ class Node:
         :return: None
         """
         self.entries.remove(entry)
-        del entry
         self.propagate_MBR(self)
 
     def propagate_MBR(self, node):
@@ -93,7 +93,7 @@ class Node:
         elif total_entries == self.MAX_DEGREE:
             return True
         else:
-            raise "A Node cant have more than :3 entries!"
+            raise OverflowError("A Node cant have more than :3 entries!")
 
     def ChooseSpiltAxis(self, entry) -> list:
         """

@@ -2,6 +2,30 @@ from functools import total_ordering
 
 
 @total_ordering
+class Wrapper:
+    """
+    A wrapper class used in a minimum heap structure to keep the entry with the minimum distance from the initial
+    axis point (0,0) in the first place of the heap.
+    """
+    def __init__(self, distance, entry):
+
+        self.distance = distance
+        self.entry = entry
+
+    def __lt__(self, other):
+        """
+        Overrides the less than operator to compare the inserted objects by their L1 distance.
+        """
+        return self.distance < other.distance
+
+    def __eq__(self, other):
+        """
+        Overrides the equal operator to compare the inserted objects by their L1 distance.
+        """
+        return self.distance == other.distance
+
+
+@total_ordering
 class MinHeap_overlap:
     """
     A wrapper class used in a minimum heap structure to keep the entry with the least overlap enlargement in the

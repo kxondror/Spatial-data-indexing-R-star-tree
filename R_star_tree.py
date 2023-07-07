@@ -124,11 +124,11 @@ class RTree:
 
         # RI3 Remove the first p entries from N and adjust the bounding rectangle of N
         node.entries.clear()
-        for wrapper in distances[int(node.MAX_DEGREE * 0.5):]:  # change after tests
+        for wrapper in distances[int(node.MAX_DEGREE * 0.3):]:  # 0.5):]:  # for tests
             if not node.is_full():
                 node.add_entry(wrapper[0])
             else:
-                raise "no entries should be left behind"
+                raise RuntimeError("No entries should be left behind")
         node.parent_entry.MBR = node.parent_entry.set_MBR()
 
         # RI4 In the sort, defined in RI2, starting with the maximum distance (= far reinsert) invoke Insert to

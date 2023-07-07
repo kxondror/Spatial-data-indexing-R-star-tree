@@ -1,3 +1,7 @@
+import sys
+import math
+
+
 class MBR:
     """
     Class representing the minimum bounding rectangle of an entry.
@@ -21,7 +25,8 @@ class MBR:
 
         :return: (int) The center point.
         """
-        center = [(self.bottom_left[i] + self.upper_right[i]) / 2 for i in range(2)]
+        center = [(self.bottom_left[dimension] + self.upper_right[dimension]) / int(sys.argv[1]) for dimension in
+                  range(int(sys.argv[1]))]
         return center
 
     def get_area(self) -> float:
@@ -30,12 +35,23 @@ class MBR:
 
         :return: (int) The total area.
         """
-        bottom_right = [self.upper_right[0], self.bottom_left[1]]
-        upper_left = [self.bottom_left[0], self.upper_right[1]]
+        bottom_right = list(self.upper_right)
+        upper_left = list(self.bottom_left)
 
-        x = bottom_right[0] - self.bottom_left[0]
-        y = upper_left[1] - self.bottom_left[1]
-        return x * y
+        # Update the coordinates based on the number of dimensions
+        for dimension in range(int(sys.argv[1])):
+            bottom_right[dimension] = self.upper_right[dimension]
+            upper_left[dimension] = self.bottom_left[dimension]
+
+        # Calculate the differences in each dimension
+        differences = [bottom_right[dimension] - self.bottom_left[dimension] for dimension in range(int(sys.argv[1]))]
+
+        # Calculate the total area by multiplying the differences
+        area = 1
+        for difference in differences:
+            area *= difference
+
+        return area
 
     def calculate_area_expansion(self, entry) -> float:
         """
@@ -46,15 +62,16 @@ class MBR:
         """
         new_bl, new_ur = entry.MBR.get_points()
 
-        if self.bottom_left[1] <= new_bl[1] <= self.upper_right[1] and \
-                self.bottom_left[0] <= new_ur[0] <= self.upper_right[0]:
-            return 0
+        for dimension in range(int(sys.argv[1])):
+            if not (self.bottom_left[dimension] <= new_bl[dimension] <= self.upper_right[dimension]) or \
+                    not (self.bottom_left[dimension] <= new_ur[dimension] <= self.upper_right[dimension]):
+                temp_points = [point for point in self.get_points()]
+                temp_points.append(new_bl)
+                temp_points.append(new_ur)
+                temp = MBR(temp_points)
+                return temp.get_area() - self.get_area()
 
-        temp_points = [point for point in self.get_points()]
-        temp_points.append(new_bl)
-        temp_points.append(new_ur)
-        temp = MBR(temp_points)
-        return temp.get_area() - self.get_area()
+        return 0
 
     def calculate_overlap(self, entry) -> float:
         """
@@ -65,20 +82,60 @@ class MBR:
         """
         new_bl, new_ur = entry.MBR.get_points()
 
-        x_overlap = max(0, min(self.upper_right[0], new_ur[0]) - max(self.bottom_left[0], new_bl[0]))
-        y_overlap = max(0, min(self.upper_right[1], new_ur[1]) - max(self.bottom_left[1], new_bl[1]))
+        overlap_product = 1
+        for dimension in range(int(sys.argv[1])):
+            overlap = max(0, min(self.upper_right[dimension], new_ur[dimension]) - max(self.bottom_left[dimension],
+                                                                                       new_bl[dimension]))
+            overlap_product *= overlap
 
-        return x_overlap * y_overlap
+        return overlap_product
 
-    def rectangles_overlap(self, entry):
+    def rectangles_overlap(self, entry) -> bool:
+        """
+        Checks if the entry's MBR coming from the argument , overlaps with the self one.
 
-        for i in range(len(self.upper_right)):
-            if self.upper_right[i] >= entry.MBR.bottom_left[i] and \
-                    self.bottom_left[i] <= entry.MBR.upper_right[i]:
+        :param entry: (Middle_entry | Record) The entry we want check for overlapping.
+        :return: (bool) True if the MBRs are overlapping; otherwise False
+        """
+        for dimension in range(int(sys.argv[1])):
+            if self.upper_right[dimension] >= entry.MBR.bottom_left[dimension] and \
+                    self.bottom_left[dimension] <= entry.MBR.upper_right[dimension]:
                 continue
             else:
                 return False
         return True
+
+    def min_dist(self, point) -> float:
+        """
+        Calculates and returns the Minimum distance (mindist) between the self Mbr and the argument point.
+        Concept described here: https://www.cs.mcgill.ca/~fzamal/Project/concepts.htm
+
+        :param point: (tuple) The point we want to calculate the distance from.
+        :return: (float) The minimum distance.
+        """
+        minDistance = 0
+
+        for dimension in range(int(sys.argv[1])):
+            if self.bottom_left[dimension] > point[dimension]:
+                rd = self.bottom_left[dimension]
+            elif self.upper_right[dimension] < point[dimension]:
+                rd = self.upper_right[dimension]
+            else:
+                rd = point[dimension]
+            minDistance += math.pow(point[dimension] - rd, 2)
+
+        return math.sqrt(minDistance)
+
+    def overlaps_with_point(self, point, radius) -> bool:
+        """
+        Checks if the distance from the given point to the self rectangle is less or equal to the radius parameter.
+
+        :param point: (tuple) The center point of the range query.
+        :param radius: (float) The radius of the circle for the range query.
+        :return: True if the point-rectangle distance is less than or equal to the radius; otherwise False.
+        """
+        minDistance = self.min_dist(point)
+        return True if minDistance <= radius else False
 
     def min_bounding_box(self) -> tuple:
         """
@@ -90,7 +147,7 @@ class MBR:
         upper_right = []
         bottom_left = []
 
-        for index in range(2):
+        for index in range(int(sys.argv[1])):
             upper_right.append(max([point[index] for point in self.points]))
             bottom_left.append(min([point[index] for point in self.points]))
 

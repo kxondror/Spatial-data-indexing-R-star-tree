@@ -1,32 +1,9 @@
 from R_star_tree import RTree
 from Record import Record
-from functools import total_ordering
+from Comparators import Wrapper
 import numpy as np
 import heapq
-
-
-@total_ordering
-class Wrapper:
-    """
-    A wrapper class used in a minimum heap structure to keep the entry with the minimum distance from the initial
-    axis point (0,0) in the first place of the heap.
-    """
-    def __init__(self, distance, entry):
-
-        self.distance = distance
-        self.entry = entry
-
-    def __lt__(self, other):
-        """
-        Overrides the less than operator to compare the inserted objects by their L1 distance.
-        """
-        return self.distance < other.distance
-
-    def __eq__(self, other):
-        """
-        Overrides the equal operator to compare the inserted objects by their L1 distance.
-        """
-        return self.distance == other.distance
+import sys
 
 
 class skyline:
@@ -90,6 +67,11 @@ class skyline:
 
 
 if __name__ == '__main__':
+
+    if len(sys.argv) > 2:
+        raise ValueError("Too many arguments!")
+    elif len(sys.argv) == 1:
+        raise ValueError("Νo dimension number entered!")
 
     # Example based on the e-learning Skyline slides.
     Tree = RTree()
